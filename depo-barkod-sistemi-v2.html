@@ -756,7 +756,7 @@ function forceLoadData() {
 
 async function loadFromSheets() {
   try {
-    showToast('☁ Google Sheets'ten veriler yükleniyor...', 'info');
+    showToast('Google Sheets ten veriler yukleniyor...', 'info');
     const res = await fetch(config.scriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -769,7 +769,7 @@ async function loadFromSheets() {
       localStorage.setItem('depo_v2_products', JSON.stringify(products));
       localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
       renderDashboard();
-      showToast('✓ ' + products.length + ' ürün Google Sheets'ten yüklendi', 'success');
+      showToast('Veriler yuklendi: ' + products.length + ' urun', 'success');
       updateGSBadge(true);
     } else {
       // Sheets boşsa localStorage veya embedded'dan yükle
