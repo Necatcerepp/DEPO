@@ -711,6 +711,10 @@
 let products = JSON.parse(localStorage.getItem('depo_v2_products') || localStorage.getItem('depo_products') || '[]');
 let movements = JSON.parse(localStorage.getItem('depo_v2_movements') || localStorage.getItem('depo_movements') || '[]');
 let config = JSON.parse(localStorage.getItem('depo_v2_config') || '{}');
+if (!config.scriptUrl) {
+  config.scriptUrl = 'https://script.google.com/macros/s/AKfycbwhU-YV-d71Efn2-65127gZeGN_2nkdgWHYfGRvd071pEkWped4QrIyFCOELctCHrjk/exec';
+  localStorage.setItem('depo_v2_config', JSON.stringify(config));
+}
 let editingId = null;
 let scannedProduct = null;
 let scanHistoryItems = [];
@@ -733,16 +737,66 @@ function init() {
 }
 
 function forceLoadData() {
-  const stored = localStorage.getItem('depo_v2_products');
-  if (!stored || JSON.parse(stored).length <= 5) {
-    // Always load embedded 542 products, clear old demo data
-    localStorage.removeItem('depo_products');
-    localStorage.removeItem('depo_movements');
-    localStorage.setItem('depo_v2_products', JSON.stringify(products));
-    localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
+  // Always try to load from Sheets first if URL is set
+  if (config.scriptUrl) {
+    loadFromSheets();
   } else {
-    products = JSON.parse(stored);
-    movements = JSON.parse(localStorage.getItem('depo_v2_movements') || '[]');
+    const stored = localStorage.getItem('depo_v2_products');
+    if (!stored || JSON.parse(stored).length <= 5) {
+      localStorage.removeItem('depo_products');
+      localStorage.removeItem('depo_movements');
+      localStorage.setItem('depo_v2_products', JSON.stringify(products));
+      localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
+    } else {
+      products = JSON.parse(stored);
+      movements = JSON.parse(localStorage.getItem('depo_v2_movements') || '[]');
+    }
+  }
+}
+
+async function loadFromSheets() {
+  try {
+    showToast('☁ Google Sheets'ten veriler yükleniyor...', 'info');
+    const res = await fetch(config.scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'read' })
+    });
+    const data = await res.json();
+    if (data.status === 'ok' && data.products && data.products.length > 0) {
+      products = data.products;
+      movements = data.movements || [];
+      localStorage.setItem('depo_v2_products', JSON.stringify(products));
+      localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
+      renderDashboard();
+      showToast('✓ ' + products.length + ' ürün Google Sheets'ten yüklendi', 'success');
+      updateGSBadge(true);
+    } else {
+      // Sheets boşsa localStorage veya embedded'dan yükle
+      const stored = localStorage.getItem('depo_v2_products');
+      if (!stored || JSON.parse(stored).length <= 5) {
+        localStorage.setItem('depo_v2_products', JSON.stringify(products));
+        localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
+      } else {
+        products = JSON.parse(stored);
+        movements = JSON.parse(localStorage.getItem('depo_v2_movements') || '[]');
+      }
+      renderDashboard();
+      // Sheets boşsa mevcut verileri senkronize et
+      syncToSheets();
+    }
+  } catch(err) {
+    // CORS veya hata durumunda localStorage'dan yükle
+    const stored = localStorage.getItem('depo_v2_products');
+    if (stored && JSON.parse(stored).length > 5) {
+      products = JSON.parse(stored);
+      movements = JSON.parse(localStorage.getItem('depo_v2_movements') || '[]');
+    } else {
+      localStorage.setItem('depo_v2_products', JSON.stringify(products));
+      localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
+    }
+    renderDashboard();
+    showToast('⚠ Sheets bağlantısı kurulamadı, yerel veriler kullanılıyor', 'info');
   }
 }
 
