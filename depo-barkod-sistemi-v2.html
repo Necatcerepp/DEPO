@@ -772,7 +772,7 @@ async function loadFromSheets() {
       showToast('Veriler yuklendi: ' + products.length + ' urun', 'success');
       updateGSBadge(true);
     } else {
-      // Sheets boşsa localStorage veya embedded'dan yükle
+      // Sheets bossa localStorage veya embedded veriden yukle
       const stored = localStorage.getItem('depo_v2_products');
       if (!stored || JSON.parse(stored).length <= 5) {
         localStorage.setItem('depo_v2_products', JSON.stringify(products));
@@ -786,7 +786,7 @@ async function loadFromSheets() {
       syncToSheets();
     }
   } catch(err) {
-    // CORS veya hata durumunda localStorage'dan yükle
+    // CORS veya hata durumunda localStorage dan yukle
     const stored = localStorage.getItem('depo_v2_products');
     if (stored && JSON.parse(stored).length > 5) {
       products = JSON.parse(stored);
