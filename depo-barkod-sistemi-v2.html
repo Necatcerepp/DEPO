@@ -802,7 +802,7 @@ let movements = JSON.parse(localStorage.getItem('depo_v2_movements') || localSto
 })();
 let config = JSON.parse(localStorage.getItem('depo_v2_config') || '{}');
 if (!config.scriptUrl) {
-  config.scriptUrl = 'https://script.google.com/macros/s/AKfycbwhU-YV-d71Efn2-65127gZeGN_2nkdgWHYfGRvd071pEkWped4QrIyFCOELctCHrjk/exec';
+  config.scriptUrl = 'https://script.google.com/macros/s/AKfycbwDhXAPATI5wrimOgrB2lVFrqOD3fIoW9gdw65aXqIe7MC4NGDjgMygKQcw69PCL4A0YQ/exec';
   localStorage.setItem('depo_v2_config', JSON.stringify(config));
 }
 let editingId = null;
