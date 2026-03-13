@@ -827,20 +827,15 @@ function init() {
 }
 
 function forceLoadData() {
-  // Always try to load from Sheets first if URL is set
+  // Always clear localStorage and load fresh from embedded data first
+  // Then sync from Sheets if connected
+  localStorage.removeItem('depo_v2_products');
+  localStorage.removeItem('depo_v2_movements');
+  localStorage.setItem('depo_v2_products', JSON.stringify(products));
+  localStorage.setItem('depo_v2_movements', JSON.stringify([]));
+  movements = [];
   if (config.scriptUrl) {
     loadFromSheets();
-  } else {
-    const stored = localStorage.getItem('depo_v2_products');
-    if (!stored || JSON.parse(stored).length <= 5) {
-      localStorage.removeItem('depo_products');
-      localStorage.removeItem('depo_movements');
-      localStorage.setItem('depo_v2_products', JSON.stringify(products));
-      localStorage.setItem('depo_v2_movements', JSON.stringify(movements));
-    } else {
-      products = JSON.parse(stored);
-      movements = JSON.parse(localStorage.getItem('depo_v2_movements') || '[]');
-    }
   }
 }
 
